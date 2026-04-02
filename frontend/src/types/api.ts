@@ -1,0 +1,67 @@
+import type { LineString } from 'geojson'
+
+export interface RouteRequest {
+  point_a: [number, number]  // [lat, lng]
+  point_b: [number, number]  // [lat, lng]
+}
+
+export interface RouteSegment {
+  index: number
+  start: [number, number]
+  end: [number, number]
+  length_m: number
+  habitat_type: string
+  distinctiveness: number
+  bng_units: number
+  sssi_flag: boolean
+  lnrs_flag: boolean
+  ancient_woodland: boolean
+}
+
+export interface RouteResponse {
+  route: LineString
+  segments: RouteSegment[]
+  total_bng_units: number
+  total_length_m: number
+  cell_size_m: number
+  bbox_wgs84: [number, number, number, number]
+}
+
+export interface HabitatRow {
+  habitat_type: string
+  area_ha: number
+  distinctiveness: number
+  condition: string
+  strategic_significance: string
+  units: number
+}
+
+export interface BiodiversityGainMetric {
+  total_pre_units: number
+  total_post_units: number
+  net_change_units: number
+  net_change_percent: number
+  minimum_gain_required: number
+  gain_deficit: number
+}
+
+export interface BGPSections {
+  development_details: { generated_at: string; coordinates: { point_a: [number, number]; point_b: [number, number] } }
+  pre_development_habitat: HabitatRow[]
+  post_development_habitat: HabitatRow[]
+  biodiversity_gain_metric: BiodiversityGainMetric
+  off_site_compensation_required: boolean
+  sssi_consultation_required: boolean
+  lnrs_areas_crossed: string[]
+  notes: string
+}
+
+export interface BGPDocument {
+  title: string
+  reference: string
+  sections: BGPSections
+}
+
+export interface ReportRequest {
+  route_result: RouteResponse
+}
