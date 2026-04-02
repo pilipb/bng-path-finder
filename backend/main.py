@@ -74,6 +74,12 @@ try:
 except ImportError:
     logger.warning("Report router not yet available — skipping")
 
+try:
+    from routers.form import router as form_router  # noqa: E402
+    app.include_router(form_router)
+except ImportError:
+    print("[main] form router not yet available")
+
 
 @app.get("/")
 def root():

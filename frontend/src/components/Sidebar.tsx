@@ -18,11 +18,12 @@ interface Props {
   onGenerateReport: () => void
   onReset: () => void
   reportLoading: boolean
+  onOpenFormModal: () => void
 }
 
 export function Sidebar({
   step, pointA, pointB, routeResult, reportData, error,
-  onCalculate, onGenerateReport, onReset, reportLoading,
+  onCalculate, onGenerateReport, onReset, reportLoading, onOpenFormModal,
 }: Props) {
   const [view, setView] = useState<View>('route')
 
@@ -98,6 +99,9 @@ export function Sidebar({
                   </button>
                   <button className="btn btn-secondary rv-print-btn" onClick={triggerPrint}>
                     Print Report
+                  </button>
+                  <button className="btn btn-secondary" onClick={onOpenFormModal}>
+                    Fill out Biodiversity Gain Plan (PDF)
                   </button>
                 </div>
                 <ReportView report={reportData} />

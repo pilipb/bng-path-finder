@@ -4,8 +4,11 @@ import { MarkerLayer } from './components/MarkerLayer'
 import { RouteLayer } from './components/RouteLayer'
 import { Sidebar } from './components/Sidebar'
 import { ReportPanel } from './components/ReportPanel'
+import { DeveloperDetailsModal } from './components/DeveloperDetailsModal'
 import { useRoute } from './hooks/useRoute'
 import { useReport } from './hooks/useReport'
+import { useFormPdf } from './hooks/useFormPdf'
+import type { DeveloperDetails } from './types/api'
 import './App.css'
 
 type Step = 'place-a' | 'place-b' | 'ready' | 'loading' | 'done'
@@ -17,6 +20,9 @@ export default function App() {
 
   const route = useRoute()
   const report = useReport()
+  const formPdf = useFormPdf()
+
+  const [showFormModal, setShowFormModal] = useState(false)
 
   const handleMapClick = useCallback((lat: number, lng: number) => {
     if (step === 'place-a') {
@@ -47,6 +53,16 @@ export default function App() {
     await report.generate(route.data)
   }, [route.data, report])
 
+  const handleDownloadOfficialForm = useCallback(async (details: DeveloperDetails) => {
+    if (!route.data || !report.data) return
+    await formPdf.downloadPdf({
+      route_result: route.data,
+      bgp_document: report.data,
+      developer: details,
+    })
+    setShowFormModal(false)
+  }, [route.data, report.data, formPdf])
+
   const handleReset = useCallback(() => {
     setPointA(null)
     setPointB(null)
@@ -75,9 +91,17 @@ export default function App() {
           onGenerateReport={handleGenerateReport}
           onReset={handleReset}
           reportLoading={report.loading}
+          onOpenFormModal={() => setShowFormModal(true)}
         />
       </div>
       <ReportPanel report={report.data} />
+      {showFormModal && (
+        <DeveloperDetailsModal
+          onSubmit={handleDownloadOfficialForm}
+          onClose={() => setShowFormModal(false)}
+          loading={formPdf.loading}
+        />
+      )}
     </>
   )
 }

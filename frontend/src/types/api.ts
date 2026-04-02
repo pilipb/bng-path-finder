@@ -66,3 +66,20 @@ export interface BGPDocument {
 export interface ReportRequest {
   route_result: RouteResponse
 }
+
+export interface DeveloperDetails {
+  applicant_name: string
+  company_name: string
+  site_address: string
+  lpa: string
+  planning_app_ref: string
+  development_description: string
+  email: string
+  telephone: string
+}
+
+export interface FormPdfRequest {
+  route_result: RouteResponse
+  bgp_document: BGPDocument
+  developer: DeveloperDetails
+}
