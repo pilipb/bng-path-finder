@@ -8,6 +8,8 @@ following the DEFRA Biodiversity Gain Plan template structure.
 from datetime import datetime, timezone
 from typing import TypedDict
 
+from report.summariser import build_summary
+
 
 ROAD_WIDTH_M = 6.0          # assumed access road width
 CONDITION_FACTOR = 1.0      # "Good" condition assumed throughout
@@ -46,6 +48,7 @@ class BGPSections(TypedDict):
 class BGPDocument(TypedDict):
     title: str
     reference: str
+    summary: str
     sections: BGPSections
 
 
@@ -185,9 +188,10 @@ def build_gain_plan(route_result: dict) -> BGPDocument:
             "Actual on-site assessment required before submission."
         )
 
-    return BGPDocument(
+    doc = BGPDocument(
         title="Biodiversity Gain Plan",
         reference=reference,
+        summary="",  # populated below once the document is assembled
         sections=BGPSections(
             development_details={
                 "generated_at": timestamp.isoformat(),
@@ -206,6 +210,8 @@ def build_gain_plan(route_result: dict) -> BGPDocument:
             notes=" ".join(notes_parts),
         ),
     )
+    doc["summary"] = build_summary(doc, route_result)
+    return doc
 
 
 def _distinctiveness_to_unit_value(d: int) -> float:

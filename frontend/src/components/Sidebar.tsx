@@ -1,8 +1,11 @@
+import { useState, useEffect } from 'react'
 import type { RouteResponse, BGPDocument } from '../types/api'
 import { CostBreakdown } from './CostBreakdown'
+import { ReportView } from './ReportView'
 import { triggerPrint } from '../utils/print'
 
 type Step = 'place-a' | 'place-b' | 'ready' | 'loading' | 'done'
+type View = 'route' | 'report'
 
 interface Props {
   step: Step
@@ -21,6 +24,22 @@ export function Sidebar({
   step, pointA, pointB, routeResult, reportData, error,
   onCalculate, onGenerateReport, onReset, reportLoading,
 }: Props) {
+  const [view, setView] = useState<View>('route')
+
+  // Switch to report view automatically when report data arrives
+  useEffect(() => {
+    if (reportData) {
+      setView('report')
+    }
+  }, [reportData])
+
+  // Reset to route view when the user resets the whole app
+  useEffect(() => {
+    if (step === 'place-a') {
+      setView('route')
+    }
+  }, [step])
+
   return (
     <div className="sidebar">
       <div className="sidebar-header">
@@ -70,29 +89,52 @@ export function Sidebar({
 
         {step === 'done' && routeResult && (
           <div className="step-done">
-            <CostBreakdown
-              segments={routeResult.segments}
-              totalBngUnits={routeResult.total_bng_units}
-              totalLengthM={routeResult.total_length_m}
-              cellSizeM={routeResult.cell_size_m}
-            />
-            <div className="action-buttons">
-              {!reportData && (
-                <button
-                  className="btn btn-primary"
-                  onClick={onGenerateReport}
-                  disabled={reportLoading}
-                >
-                  {reportLoading ? 'Generating…' : 'Generate Biodiversity Gain Plan'}
-                </button>
-              )}
-              {reportData && (
-                <button className="btn btn-secondary" onClick={triggerPrint}>
-                  Download / Print Report
-                </button>
-              )}
-              <button className="btn btn-ghost" onClick={onReset}>Reset</button>
-            </div>
+            {/* Report view */}
+            {view === 'report' && reportData && (
+              <>
+                <div className="rv-nav">
+                  <button className="btn btn-ghost rv-back-btn" onClick={() => setView('route')}>
+                    ← Back to Route
+                  </button>
+                  <button className="btn btn-secondary rv-print-btn" onClick={triggerPrint}>
+                    Print Report
+                  </button>
+                </div>
+                <ReportView report={reportData} />
+                <div className="action-buttons">
+                  <button className="btn btn-ghost" onClick={onReset}>Reset</button>
+                </div>
+              </>
+            )}
+
+            {/* Route / cost breakdown view */}
+            {view === 'route' && (
+              <>
+                <CostBreakdown
+                  segments={routeResult.segments}
+                  totalBngUnits={routeResult.total_bng_units}
+                  totalLengthM={routeResult.total_length_m}
+                  cellSizeM={routeResult.cell_size_m}
+                />
+                <div className="action-buttons">
+                  {!reportData && (
+                    <button
+                      className="btn btn-primary"
+                      onClick={onGenerateReport}
+                      disabled={reportLoading}
+                    >
+                      {reportLoading ? 'Generating…' : 'Generate Biodiversity Gain Plan'}
+                    </button>
+                  )}
+                  {reportData && (
+                    <button className="btn btn-secondary" onClick={() => setView('report')}>
+                      View Report
+                    </button>
+                  )}
+                  <button className="btn btn-ghost" onClick={onReset}>Reset</button>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

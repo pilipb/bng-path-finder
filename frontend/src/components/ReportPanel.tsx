@@ -14,6 +14,13 @@ export function ReportPanel({ report }: Props) {
       <h1>{report.title}</h1>
       <p className="report-ref">Reference: {report.reference}</p>
 
+      {report.summary && (
+        <section className="report-summary">
+          <h2>Summary</h2>
+          <p>{report.summary}</p>
+        </section>
+      )}
+
       <section>
         <h2>1. Development Details</h2>
         <table>

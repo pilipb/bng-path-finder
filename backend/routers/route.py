@@ -1,3 +1,6 @@
+import logging
+import time
+
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 import numpy as np
@@ -9,6 +12,7 @@ from pathfinding.smoother import smooth_path
 from bng.calculator import calculate_segments
 from layers.habitat_networks import get_habitat_raster
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["route"])
 
 
@@ -23,16 +27,20 @@ async def calculate_route(req: RouteRequest, request: Request):
     Calculate the BNG-optimal route between two points.
     """
     gee_available = getattr(request.app.state, "gee_available", False)
+    t_start = time.perf_counter()
+    logger.info("Route request received: A=%s B=%s (gee_available=%s)", req.point_a, req.point_b, gee_available)
 
     try:
         # Build grid
         grid = make_grid(req.point_a, req.point_b)
         bbox = grid.bbox_wgs84
+        logger.debug("Grid built: %dx%d cells, cell_size=%.1fm, bbox=%s", grid.n_rows, grid.n_cols, grid.cell_size_m, bbox)
 
         # Build cost raster (fetches all layers in parallel)
         cost_raster, awi_mask, sssi_mask, lnrs_mask = build_cost_raster(
             grid, bbox, gee_available=gee_available
         )
+        logger.debug("Cost raster built, shape=%s", cost_raster.shape)
 
         # Also get habitat raster for segment labelling
         habitat_d_raster, _ = get_habitat_raster(grid, bbox)
@@ -40,12 +48,16 @@ async def calculate_route(req: RouteRequest, request: Request):
         # Find start/end grid positions
         start_rc = wgs84_to_grid(*req.point_a, grid)
         end_rc = wgs84_to_grid(*req.point_b, grid)
+        logger.debug("Grid positions: start=%s end=%s", start_rc, end_rc)
 
         # Run A*
         path_indices = find_path(cost_raster, start_rc, end_rc)
 
         if not path_indices:
+            logger.warning("No valid path found between %s and %s", req.point_a, req.point_b)
             raise HTTPException(status_code=422, detail="No valid path found between points")
+
+        logger.debug("A* found path with %d cells", len(path_indices))
 
         # Smooth path
         smoothed_coords = smooth_path(path_indices, grid)
@@ -65,6 +77,12 @@ async def calculate_route(req: RouteRequest, request: Request):
         total_bng = sum(s["bng_units"] for s in segments)
         total_length = sum(s["length_m"] for s in segments)
 
+        elapsed = time.perf_counter() - t_start
+        logger.info(
+            "Route calculated in %.2fs: %d segments, %.1fm, %.4f BNG units",
+            elapsed, len(segments), total_length, total_bng,
+        )
+
         # Build GeoJSON LineString from smoothed coords
         route_geojson = {
             "type": "LineString",
@@ -83,4 +101,5 @@ async def calculate_route(req: RouteRequest, request: Request):
     except HTTPException:
         raise
     except Exception as e:
+        logger.exception("Route calculation failed after %.2fs", time.perf_counter() - t_start)
         raise HTTPException(status_code=500, detail=f"Route calculation failed: {str(e)}")

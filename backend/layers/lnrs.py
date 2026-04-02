@@ -1,8 +1,12 @@
+import logging
+
 import numpy as np
 import rasterio.features
 
 from layers.base import fetch_layer
 from pathfinding.grid import GridSpec
+
+logger = logging.getLogger(__name__)
 
 LNRS_MULTIPLIER = 1.15
 
@@ -11,6 +15,7 @@ def get_lnrs_multiplier_raster(grid: GridSpec, bbox_wgs84: tuple[float, float, f
     """Returns a multiplier raster: 1.15 where LNRS area, 1.0 elsewhere."""
     geojson = fetch_layer("lnrs", bbox_wgs84)
     features = geojson.get("features", [])
+    logger.info("lnrs: %d features fetched", len(features))
 
     raster = np.ones((grid.n_rows, grid.n_cols), dtype=np.float32)
 

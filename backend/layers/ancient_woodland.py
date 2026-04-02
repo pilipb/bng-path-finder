@@ -1,8 +1,12 @@
+import logging
+
 import numpy as np
 import rasterio.features
 
 from layers.base import fetch_layer
 from pathfinding.grid import GridSpec
+
+logger = logging.getLogger(__name__)
 
 ANCIENT_WOODLAND_COST = 999.0  # impassable
 
@@ -11,6 +15,7 @@ def get_awi_raster(grid: GridSpec, bbox_wgs84: tuple[float, float, float, float]
     """Returns a cost raster where ancient woodland = 999 (impassable), 0 elsewhere."""
     geojson = fetch_layer("ancient_woodland", bbox_wgs84)
     features = geojson.get("features", [])
+    logger.info("ancient_woodland: %d features fetched", len(features))
 
     raster = np.zeros((grid.n_rows, grid.n_cols), dtype=np.float32)
 

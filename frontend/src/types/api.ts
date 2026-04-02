@@ -46,7 +46,7 @@ export interface BiodiversityGainMetric {
 }
 
 export interface BGPSections {
-  development_details: { generated_at: string; coordinates: { point_a: [number, number]; point_b: [number, number] } }
+  development_details: { generated_at: string; coordinates: { bbox_wgs84?: number[] } }
   pre_development_habitat: HabitatRow[]
   post_development_habitat: HabitatRow[]
   biodiversity_gain_metric: BiodiversityGainMetric
@@ -59,6 +59,7 @@ export interface BGPSections {
 export interface BGPDocument {
   title: string
   reference: string
+  summary: string
   sections: BGPSections
 }
 

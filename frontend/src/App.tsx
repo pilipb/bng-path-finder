@@ -61,7 +61,7 @@ export default function App() {
         <div className="map-area">
           <MapView step={step} onMapClick={handleMapClick}>
             <MarkerLayer pointA={pointA} pointB={pointB} />
-            {route.data && <RouteLayer segments={route.data.segments} />}
+            {route.data && <RouteLayer route={route.data.route} segments={route.data.segments} />}
           </MapView>
         </div>
         <Sidebar

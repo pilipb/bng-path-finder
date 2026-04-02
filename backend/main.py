@@ -1,4 +1,6 @@
 import os
+import logging
+import logging.config
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -6,6 +8,26 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logging.config.dictConfig({
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+        }
+    },
+    "root": {"level": "INFO", "handlers": ["console"]},
+})
+
+logger = logging.getLogger(__name__)
 
 # GEE initialisation (optional)
 GEE_AVAILABLE = False
@@ -19,11 +41,11 @@ if _GEE_SERVICE_ACCOUNT and _GEE_CREDENTIALS_PATH:
         credentials = ee.ServiceAccountCredentials(_GEE_SERVICE_ACCOUNT, _GEE_CREDENTIALS_PATH)
         ee.Initialize(credentials)
         GEE_AVAILABLE = True
-        print("[GEE] Initialized successfully")
+        logger.info("GEE initialized successfully")
     except Exception as e:
-        print(f"[GEE] Could not initialize: {e}. Water layer will use fallback.")
+        logger.warning("GEE could not initialize: %s. Water layer will use fallback.", e)
 else:
-    print("[GEE] No credentials configured. Water layer disabled.")
+    logger.info("GEE: no credentials configured — water layer disabled")
 
 
 @asynccontextmanager
@@ -50,7 +72,7 @@ try:
     from routers.report import router as report_router  # noqa: E402
     app.include_router(report_router)
 except ImportError:
-    print("[main] report router not yet available")
+    logger.warning("Report router not yet available — skipping")
 
 
 @app.get("/")

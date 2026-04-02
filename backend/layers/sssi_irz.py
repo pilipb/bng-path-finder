@@ -1,8 +1,12 @@
+import logging
+
 import numpy as np
 import rasterio.features
 
 from layers.base import fetch_layer
 from pathfinding.grid import GridSpec
+
+logger = logging.getLogger(__name__)
 
 SSSI_COST = 50.0
 
@@ -11,6 +15,7 @@ def get_sssi_raster(grid: GridSpec, bbox_wgs84: tuple[float, float, float, float
     """Returns a cost raster where SSSI IRZ = 50, 0 elsewhere."""
     geojson = fetch_layer("sssi_irz", bbox_wgs84)
     features = geojson.get("features", [])
+    logger.info("sssi_irz: %d features fetched", len(features))
 
     raster = np.zeros((grid.n_rows, grid.n_cols), dtype=np.float32)
 

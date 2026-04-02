@@ -1,8 +1,12 @@
+import logging
+
 import numpy as np
 
 from pathfinding.grid import GridSpec
 
-WATER_COST = 30.0
+logger = logging.getLogger(__name__)
+
+WATER_COST = 100.0
 
 
 def get_water_raster(
@@ -15,8 +19,10 @@ def get_water_raster(
     Otherwise returns zeros (water cost = 0, conservative fallback).
     """
     if gee_available:
+        logger.debug("water: fetching from GEE")
         return _fetch_from_gee(grid, bbox_wgs84)
     else:
+        logger.debug("water: GEE unavailable — returning zero raster")
         return np.zeros((grid.n_rows, grid.n_cols), dtype=np.float32)
 
 
@@ -48,10 +54,9 @@ def _fetch_from_gee(grid: GridSpec, bbox_wgs84: tuple[float, float, float, float
                 arr = resize(arr, (grid.n_rows, grid.n_cols), order=0, preserve_range=True).astype(np.float32)
             return arr
         except Exception:
-            # sampleRectangle has pixel limits; fall back to zeros
-            print("[GEE] sampleRectangle failed (grid too large?), using zero water raster")
+            logger.warning("water: GEE sampleRectangle failed (grid too large?) — using zero raster")
             return np.zeros((grid.n_rows, grid.n_cols), dtype=np.float32)
 
     except Exception as e:
-        print(f"[GEE] Water fetch failed: {e}")
+        logger.error("water: GEE fetch failed: %s", e)
         return np.zeros((grid.n_rows, grid.n_cols), dtype=np.float32)

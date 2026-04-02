@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import rasterio.features
 import rasterio.transform
@@ -6,6 +8,8 @@ from shapely.geometry import shape
 from layers.base import fetch_layer
 from bng.weights import get_distinctiveness, DEFAULT_DISTINCTIVENESS
 from pathfinding.grid import GridSpec
+
+logger = logging.getLogger(__name__)
 
 
 def get_habitat_raster(grid: GridSpec, bbox_wgs84: tuple[float, float, float, float]) -> tuple[np.ndarray, dict[tuple[int,int], str]]:
@@ -16,16 +20,18 @@ def get_habitat_raster(grid: GridSpec, bbox_wgs84: tuple[float, float, float, fl
     """
     geojson = fetch_layer("habitat_networks", bbox_wgs84)
     features = geojson.get("features", [])
+    logger.info("habitat_networks: %d features fetched", len(features))
 
     raster = np.full((grid.n_rows, grid.n_cols), float(DEFAULT_DISTINCTIVENESS), dtype=np.float32)
 
     if not features:
+        logger.debug("habitat_networks: no features — raster filled with default distinctiveness (%s)", DEFAULT_DISTINCTIVENESS)
         return raster, {}
 
-    # Try common field names for habitat type
+    # Priority Habitats Inventory field is "MainHabs"; fallback to other common names
     HABITAT_FIELD_CANDIDATES = [
-        "Main_Habit", "HabitatTyp", "Habitat_Type", "HAB_TYPE",
-        "Habitat", "Phase_1", "NVC_Community", "Description",
+        "MainHabs", "Main_Habit", "HabitatTyp", "Habitat_Type", "HAB_TYPE",
+        "Habitat", "Phase_1", "NVC_Community", "Description", "FeatDesc",
     ]
 
     # Sort features by distinctiveness ascending so high-value burns last (wins)
@@ -63,5 +69,6 @@ def get_habitat_raster(grid: GridSpec, bbox_wgs84: tuple[float, float, float, fl
             dtype="float32",
             all_touched=True,
         )
+        logger.debug("habitat_networks: rasterized %d shapes", len(shapes_vals))
 
     return raster, {}

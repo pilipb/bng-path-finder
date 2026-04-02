@@ -1,8 +1,12 @@
+import logging
+
 import numpy as np
 from pyproj import Transformer
 
 from pathfinding.grid import GridSpec, grid_to_wgs84
 from bng.weights import get_distinctiveness, DISTINCTIVENESS_COST
+
+logger = logging.getLogger(__name__)
 
 _to_osgb = Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True)
 
@@ -29,6 +33,8 @@ def calculate_segments(
     emit one segment per group.
     Returns list of segment dicts matching the RouteResponse contract.
     """
+    logger.debug("calculate_segments: %d path cells, %d smoothed coords", len(path_indices), len(smoothed_coords))
+
     if len(path_indices) < 2:
         return []
 
@@ -95,6 +101,15 @@ def calculate_segments(
         })
         seg_index += 1
 
+    total_bng = sum(s["bng_units"] for s in segments)
+    logger.info(
+        "BNG segments: %d segments, total %.4f BNG units (AWI=%d, SSSI=%d, LNRS=%d)",
+        len(segments),
+        total_bng,
+        sum(1 for s in segments if s["ancient_woodland"]),
+        sum(1 for s in segments if s["sssi_flag"]),
+        sum(1 for s in segments if s["lnrs_flag"]),
+    )
     return segments
 
 
