@@ -5,6 +5,8 @@ import { RouteLayer } from './components/RouteLayer'
 import { Sidebar } from './components/Sidebar'
 import { ReportPanel } from './components/ReportPanel'
 import { DeveloperDetailsModal } from './components/DeveloperDetailsModal'
+import { Header } from './components/Header'
+import { InfoModal } from './components/InfoModal'
 import { useRoute } from './hooks/useRoute'
 import { useReport } from './hooks/useReport'
 import { useFormPdf } from './hooks/useFormPdf'
@@ -23,6 +25,7 @@ export default function App() {
   const formPdf = useFormPdf()
 
   const [showFormModal, setShowFormModal] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
 
   const handleMapClick = useCallback((lat: number, lng: number) => {
     if (step === 'place-a') {
@@ -73,6 +76,8 @@ export default function App() {
 
   return (
     <>
+      <div className="app-root">
+      <Header onInfoClick={() => setShowInfo(true)} />
       <div className="app-layout">
         <div className="map-area">
           <MapView step={step} onMapClick={handleMapClick}>
@@ -94,7 +99,9 @@ export default function App() {
           onOpenFormModal={() => setShowFormModal(true)}
         />
       </div>
+      </div>
       <ReportPanel report={report.data} />
+      {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
       {showFormModal && (
         <DeveloperDetailsModal
           onSubmit={handleDownloadOfficialForm}

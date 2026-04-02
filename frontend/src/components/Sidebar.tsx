@@ -44,7 +44,6 @@ export function Sidebar({
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h1>BNG Path Finder</h1>
         <p className="sidebar-subtitle">Biodiversity Net Gain route optimiser</p>
       </div>
 

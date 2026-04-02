@@ -10,10 +10,60 @@ html, body, #root {
   background: #f9fafb;
 }
 
-.app-layout {
+/* Top header */
+.app-root {
   display: flex;
+  flex-direction: column;
   height: 100vh;
   width: 100vw;
+  overflow: hidden;
+}
+
+.app-header {
+  height: 48px;
+  flex-shrink: 0;
+  background: hwb(101 23% 66%);;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid #94a7e2;
+  z-index: 100;
+}
+
+.app-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.app-header-info-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.app-header-info-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.app-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -36,7 +86,7 @@ html, body, #root {
 .sidebar-header {
   padding: 20px 20px 16px;
   border-bottom: 1px solid #e5e7eb;
-  background: #1d4ed8;
+  background: hwb(101 23% 66%);
   color: white;
 }
 
@@ -71,7 +121,7 @@ html, body, #root {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #1d4ed8;
+  background: hwb(101 23% 66%);;
   color: white;
   display: flex;
   align-items: center;
@@ -121,7 +171,7 @@ html, body, #root {
   width: 40px;
   height: 40px;
   border: 3px solid #e5e7eb;
-  border-top-color: #1d4ed8;
+  border-top-color: hwb(101 23% 66%);;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -144,7 +194,7 @@ html, body, #root {
 }
 
 .btn-primary {
-  background: #1d4ed8;
+  background: hwb(101 23% 66%);;
   color: white;
 }
 .btn-primary:hover { background: #1e40af; }
@@ -232,7 +282,7 @@ html, body, #root {
   display: block;
   font-size: 15px;
   font-weight: 700;
-  color: #1d4ed8;
+  color: hwb(101 23% 66%);;
 }
 
 .segment-table-wrapper {
@@ -351,7 +401,7 @@ html, body, #root {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #1d4ed8;
+  color: hwb(101 23% 66%);;
 }
 
 .rv-summary-text {
@@ -384,7 +434,7 @@ html, body, #root {
 
 /* Header */
 .rv-header {
-  background: #1d4ed8;
+  background: hwb(101 23% 66%);;
   color: #fff;
   border-radius: 8px;
   padding: 14px 16px;
@@ -612,6 +662,59 @@ html, body, #root {
   line-height: 1.6;
 }
 
+/* Info modal */
+.info-modal-box {
+  max-width: 600px;
+}
+
+.info-modal-body {
+  gap: 0;
+  padding: 0;
+}
+
+.info-section {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.info-section--last {
+  border-bottom: none;
+}
+
+.info-section h3 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hwb(101 23% 66%);;
+  margin-bottom: 8px;
+}
+
+.info-section p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #374151;
+}
+
+.info-list {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.info-list a {
+  color: hwb(101 23% 66%);;
+  text-decoration: none;
+}
+
+.info-list a:hover {
+  text-decoration: underline;
+}
+
 /* Modal overlay */
 .modal-overlay {
   position: fixed;
@@ -654,7 +757,7 @@ html, body, #root {
   width: 44px;
   height: 44px;
   border: 4px solid #e5e7eb;
-  border-top-color: #1d4ed8;
+  border-top-color: hwb(101 23% 66%);;
   border-radius: 50%;
   animation: spin 0.75s linear infinite;
 }
@@ -662,7 +765,7 @@ html, body, #root {
 .modal-loading-text {
   font-size: 14px;
   font-weight: 600;
-  color: #1d4ed8;
+  color: hwb(101 23% 66%);;
 }
 
 .modal-header {
@@ -740,7 +843,7 @@ html, body, #root {
 .modal-body input:focus,
 .modal-body textarea:focus {
   outline: none;
-  border-color: #1d4ed8;
+  border-color: hwb(101 23% 66%);;
   background: #fff;
 }
 
