@@ -4,7 +4,7 @@ import numpy as np
 from pyproj import Transformer
 
 from pathfinding.grid import GridSpec, grid_to_wgs84
-from bng.weights import get_distinctiveness, DISTINCTIVENESS_COST
+from bng.weights import get_distinctiveness, DISTINCTIVENESS_COST, BNG_UNIT_VALUE
 
 logger = logging.getLogger(__name__)
 
@@ -75,10 +75,12 @@ def calculate_segments(
         n_cells = g_end - g_start + 1
         length_m = float(n_cells) * grid.cell_size_m  # conservative approximation
 
-        # BNG units = (length × road_width / 10000) × distinctiveness × condition
+        # BNG units destroyed = (road footprint area) × unit value × condition
+        # Uses BNG_UNIT_VALUE (not the A* pathfinding cost table) so that sealed
+        # surfaces correctly contribute 0 units, not 1.0.
         area_ha = (length_m * ROAD_WIDTH_M) / 10_000
-        cost_per_d = DISTINCTIVENESS_COST.get(d, 2.0)
-        bng_units = area_ha * cost_per_d * CONDITION_FACTOR
+        unit_value = BNG_UNIT_VALUE.get(d, 2.0)
+        bng_units = area_ha * unit_value * CONDITION_FACTOR
 
         # Apply LNRS multiplier
         if is_lnrs:

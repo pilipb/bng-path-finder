@@ -33,8 +33,8 @@ def fetch_layer(
         "geometry": f"{min_lng},{min_lat},{max_lng},{max_lat}",
         "geometryType": "esriGeometryEnvelope",
         "spatialRel": "esriSpatialRelIntersects",
-        "inSR": "4326",
-        "outSR": "4326",
+        "inSR": "4326",   # query bbox is in WGS84
+        "outSR": "27700", # return geometries in OSGB36 (metres) to match the raster grid CRS
         "outFields": "*",
         "resultRecordCount": 2000,
         "where": "1=1",

@@ -8,12 +8,14 @@ following the DEFRA Biodiversity Gain Plan template structure.
 from datetime import datetime, timezone
 from typing import TypedDict
 
+from bng.weights import POST_CONSTRUCTION_CONDITION
 from report.summariser import build_summary
 
 
-ROAD_WIDTH_M = 6.0          # assumed access road width
-CONDITION_FACTOR = 1.0      # "Good" condition assumed throughout
-MIN_GAIN_PERCENT = 10.0     # statutory minimum BNG requirement
+ROAD_WIDTH_M = 6.0       # assumed single-track access road width (m)
+SURVEY_CORRIDOR_M = 15.0 # ecological survey corridor width (m); DEFRA guidance
+CONDITION_FACTOR = 1.0   # pre-development condition assumed "Good" throughout
+MIN_GAIN_PERCENT = 10.0  # statutory minimum biodiversity net gain (Environment Act 2021)
 
 
 class HabitatRow(TypedDict):
@@ -77,9 +79,8 @@ def build_gain_plan(route_result: dict) -> BGPDocument:
         is_lnrs = seg.get("lnrs_flag", False)
         is_awi = seg.get("ancient_woodland", False)
 
-        # Pre-development: full corridor width (assume 15m survey corridor)
-        corridor_width_m = 15.0
-        area_ha = (length_m * corridor_width_m) / 10_000
+        # Pre-development: full survey corridor at Good condition
+        area_ha = (length_m * SURVEY_CORRIDOR_M) / 10_000
 
         strategic_sig = _strategic_significance(is_lnrs, is_awi)
         lnrs_multiplier = 1.15 if is_lnrs else 1.0
@@ -110,24 +111,32 @@ def build_gain_plan(route_result: dict) -> BGPDocument:
             units=round(item["units"], 4),
         ))
 
-    # Post-development: road footprint (ROAD_WIDTH_M) destroys habitat
-    # remaining corridor is ROAD_WIDTH_M narrower
+    # Post-development: road footprint seals ROAD_WIDTH_M of the corridor.
+    # The remaining strip (SURVEY_CORRIDOR_M - ROAD_WIDTH_M) is retained but
+    # its condition degrades during construction in proportion to how sensitive
+    # the habitat is — high-distinctiveness habitats recover very slowly.
     post_dev: list[HabitatRow] = []
     for item in habitat_map.values():
-        # Fraction of corridor that becomes road
-        road_fraction = ROAD_WIDTH_M / 15.0
+        d = item["distinctiveness"]
+        road_fraction = ROAD_WIDTH_M / SURVEY_CORRIDOR_M
         remaining_area_ha = item["area_ha"] * (1 - road_fraction)
-        remaining_units = item["units"] * (1 - road_fraction)
 
-        # Road surface itself is distinctiveness 0 (sealed surface)
-        road_area_ha = item["area_ha"] * road_fraction
+        # Post-construction condition reflects habitat sensitivity (Metric 4.0)
+        post_condition = POST_CONSTRUCTION_CONDITION.get(d, 1.0)
+        condition_label = _condition_label(post_condition)
+        remaining_units = (
+            remaining_area_ha
+            * _distinctiveness_to_unit_value(d)
+            * post_condition
+            * (1.15 if item["is_lnrs"] else 1.0)
+        )
 
         if remaining_area_ha > 0:
             post_dev.append(HabitatRow(
                 habitat_type=item["habitat_type"],
                 area_ha=round(remaining_area_ha, 4),
-                distinctiveness=item["distinctiveness"],
-                condition=item["condition"],
+                distinctiveness=d,
+                condition=condition_label,
                 strategic_significance=item["strategic_significance"],
                 units=round(remaining_units, 4),
             ))
@@ -215,8 +224,20 @@ def build_gain_plan(route_result: dict) -> BGPDocument:
 
 
 def _distinctiveness_to_unit_value(d: int) -> float:
-    """Biodiversity Metric 4.0 unit multiplier per distinctiveness band."""
-    return {8: 8.0, 6: 6.0, 4: 4.0, 2: 2.0, 0: 0.5}.get(d, 2.0)
+    """Biodiversity Metric 4.0 unit value per distinctiveness band.
+    Sealed/very-low surfaces score 0 (not 0.5 — corrected from earlier placeholder)."""
+    return {8: 8.0, 6: 6.0, 4: 4.0, 2: 2.0, 0: 0.0}.get(d, 2.0)
+
+
+def _condition_label(factor: float) -> str:
+    """Map a Metric 4.0 condition factor to a human-readable label."""
+    if factor >= 1.0:
+        return "Good"
+    if factor >= 0.7:
+        return "Moderate"
+    if factor >= 0.4:
+        return "Poor"
+    return "Very Poor"
 
 
 def _strategic_significance(is_lnrs: bool, is_awi: bool) -> str:
