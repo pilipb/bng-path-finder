@@ -1,73 +1,83 @@
-# React + TypeScript + Vite
+# BNG Path Planner — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite single-page application for the BNG Path Planner tool. Renders an interactive Leaflet map where users can drop two points and receive a BNG-optimal route with habitat scoring, cost breakdown, and a downloadable PDF report.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 18+
+- [`pnpm`](https://pnpm.io/) (`npm install -g pnpm`)
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd frontend
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+pnpm dev
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Starts the Vite dev server at **http://localhost:5173**.  
+The app calls the backend at `http://localhost:8000` — make sure the backend is running before using the route/report features.
+
+## Build
+
+```bash
+pnpm build     # type-check + production bundle → dist/
+pnpm preview   # serve the production build locally
+```
+
+## Lint
+
+```bash
+pnpm lint
+```
+
+## Key Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `react` / `react-dom` | UI framework |
+| `leaflet` + `react-leaflet` | Interactive map |
+| `vite` | Dev server and bundler |
+| `typescript` | Type safety |
+
+## Project Structure
+
+```
+frontend/
+├── index.html              # Entry HTML — sets page title
+├── public/
+│   └── favicon.svg         # App icon
+└── src/
+    ├── main.tsx            # React root mount
+    ├── App.tsx             # Top-level layout
+    ├── types/
+    │   └── api.ts          # Shared TypeScript types matching backend responses
+    ├── components/
+    │   ├── Header.tsx          # Top navigation bar
+    │   ├── Sidebar.tsx         # Point picker, route controls
+    │   ├── MapView.tsx         # Leaflet map wrapper
+    │   ├── RouteLayer.tsx      # Draws route segments on the map
+    │   ├── CostBreakdown.tsx   # Per-segment BNG unit table
+    │   ├── ReportPanel.tsx     # PDF report download panel
+    │   ├── InfoModal.tsx       # About / methodology modal
+    │   └── DeveloperDetailsModal.tsx  # Official BNG form modal
+    └── utils/
+        └── geo.ts          # Formatting helpers (BNG units, length, colours)
+```
+
+## Connecting to the Backend
+
+The frontend makes direct fetch calls to `http://localhost:8000`. There is no proxy configured — both services must be running simultaneously during development:
+
+```bash
+# Terminal 1 — backend
+cd backend && uv run uvicorn main:app --reload
+
+# Terminal 2 — frontend
+cd frontend && pnpm dev
 ```
