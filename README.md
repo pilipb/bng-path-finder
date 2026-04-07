@@ -1,5 +1,7 @@
 # BNG Path Planner
 
+[Live](https://bng-path-planner.web.app)
+
 A full-stack web tool for calculating Biodiversity Net Gain (BNG) optimal routes in England. Drop two points on a map and the app fetches live habitat data from Natural England and Google Earth Engine, runs A* pathfinding weighted by BNG impact, and returns a scored route with a downloadable PDF report.
 
 ![Image 1](img1.png)
