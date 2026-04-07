@@ -1,0 +1,79 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-backend:
+    name: Build & deploy backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        run: |
+          docker build \
+            -t europe-west1-docker.pkg.dev/bng-path-planner/bng/bng-path-finder-api:${{ github.sha }} \
+            -t europe-west1-docker.pkg.dev/bng-path-planner/bng/bng-path-finder-api:latest \
+            .
+          docker push europe-west1-docker.pkg.dev/bng-path-planner/bng/bng-path-finder-api:${{ github.sha }}
+          docker push europe-west1-docker.pkg.dev/bng-path-planner/bng/bng-path-finder-api:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy bng-path-finder-api \
+            --image europe-west1-docker.pkg.dev/bng-path-planner/bng/bng-path-finder-api:${{ github.sha }} \
+            --platform managed \
+            --region europe-west1 \
+            --allow-unauthenticated \
+            --memory 2Gi \
+            --cpu 2 \
+            --set-env-vars="ALLOWED_ORIGINS=https://bng-path-planner.web.app" \
+            --set-secrets="ANTHROPIC_API_KEY=anthropic-api-key:latest,GEE_CREDENTIALS_JSON=gee-credentials:latest" \
+            --project=bng-path-planner
+
+  deploy-frontend:
+    name: Build & deploy frontend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: cd frontend && pnpm install --frozen-lockfile
+
+      - name: Build
+        run: cd frontend && pnpm build
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.GCP_SA_KEY }}
+          projectId: bng-path-planner
+          channelId: live

@@ -1,0 +1,15 @@
+frontend/
+.git/
+.gitignore
+**/__pycache__/
+**/*.pyc
+*.egg-info/
+.venv/
+backend/.venv/
+.env
+backend/.env
+**/.env
+backend/canopy-guide-38c3ae6c52d8.json
+README.md
+CLAUDE.md
+img*.png

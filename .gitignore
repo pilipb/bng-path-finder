@@ -19,3 +19,7 @@ frontend/dist/
 
 # GEE credentials (never commit)
 backend/*.json
+key.json
+
+
+hosting.*

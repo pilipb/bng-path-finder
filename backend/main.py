@@ -34,6 +34,21 @@ GEE_AVAILABLE = False
 
 _GEE_SERVICE_ACCOUNT = os.getenv("GEE_SERVICE_ACCOUNT")
 _GEE_CREDENTIALS_PATH = os.getenv("GEE_CREDENTIALS_PATH")
+_GEE_CREDENTIALS_JSON = os.getenv("GEE_CREDENTIALS_JSON")  # Cloud Run: full JSON content
+
+if _GEE_CREDENTIALS_JSON and not _GEE_CREDENTIALS_PATH:
+    import tempfile
+    import json as _json
+    _tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False)
+    _tmp.write(_GEE_CREDENTIALS_JSON)
+    _tmp.flush()
+    _tmp.close()
+    _GEE_CREDENTIALS_PATH = _tmp.name
+    if not _GEE_SERVICE_ACCOUNT:
+        try:
+            _GEE_SERVICE_ACCOUNT = _json.loads(_GEE_CREDENTIALS_JSON).get("client_email")
+        except Exception:
+            pass
 
 if _GEE_SERVICE_ACCOUNT and _GEE_CREDENTIALS_PATH:
     try:
@@ -56,9 +71,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="BNG Path Finder API", lifespan=lifespan)
 
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+_allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
