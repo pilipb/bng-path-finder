@@ -26,7 +26,7 @@ Create a `.env` file in the `backend/` directory:
 GEE_SERVICE_ACCOUNT=your-service-account@project.iam.gserviceaccount.com
 GEE_CREDENTIALS_PATH=/path/to/credentials.json
 
-# Required for AI-generated PDF reports
+# Required for PDF reports, summary and recommendations
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
