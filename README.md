@@ -11,7 +11,7 @@ A full-stack web tool for calculating Biodiversity Net Gain (BNG) optimal routes
 
 The problem is that in the UK to build an access road, the landowner must calculate the Biodiversity Net Gain (BNG) units as this is the value of the habitats that the development would be damaging and so the debt that the landowner will owe the government for the development. So if the road destroys more biodiversity than the landowner can "regrow" on their remaining land, they must buy off-site units. You can buy these onthe private market for anywhere between £15,000 and £30,000+ each, if no private units are available, the government sells them as a last resort. These can cost £42,000 to £125,000 per unit.
 
-A route that avoids a high-value "Good Condition" oak grove in favor of a "Poor Condition" scrub patch could save the landowner hundreds of thousands of pounds in credit purchases alone.
+A route that avoids a high-value land in favor of a scrub patch could save the landowner hundreds of thousands of pounds in credit purchases alone.
 
 The problem is that the current method for assessing this is through manual on site surveys so even getting a rough estimate requires an expert. The data required for a large part of the assessment is available publically on gov.uk howvwer making sense of the vast quantities of data is difficult and time consuming.
 
@@ -42,7 +42,7 @@ If there was more time i would build in a more micro version of the tool that th
 
 I would also tune further the responses for guidance, potentially working alongside an expert in the field to understand how much of the guidance can be automated or improved, which steps should be recommended and what their usual workflow would be.
 
-Overall the ai layer has several limitations. The researcher agent fires once automatically and is not conversational — the user cannot ask follow-up questions or request alternative routes. Web search results depend on what is currently indexed; gov.uk links could change or, despite prompt safeguards, a URL could be hallucinated. The form-fill relies on a single structured LLM call; if the model deviates from the expected JSON schema, the system falls back silently to static values. The plain-English summary has no feedback mechanism — the user cannot flag if it is incorrect or request a different framing. Future improvements for this would be adding a chat and feedback mechanism on the report page, addinh structured output response for the form schema, and further eval of responses to understand what a good response would look like so that a rubric or even llm-as-judge can be built.
+Overall the ai layer has several limitations. The researcher agent fires once automatically and is not conversational, the user cannot ask follow-up questions or request alternative routes. Web search results depend on what is currently indexed; gov.uk links could change or, despite prompt safeguards, a URL could be hallucinated. The form fill relies on a single structured LLM call if the model deviates from the expected JSON schema, the system falls back silently to static values. The plain English summary has no feedback mechanism, the user cannot flag if it is incorrect or request a different framing. Future improvements for this would be adding a chat and feedback mechanism on the report page, addinh structured output response for the form schema, and further eval of responses to understand what a good response would look like so that a rubric or even llm-as-judge can be built.
 
 ## Setup
 
