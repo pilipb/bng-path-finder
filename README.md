@@ -2,12 +2,8 @@
 
 A full-stack web tool for calculating Biodiversity Net Gain (BNG) optimal routes in England. Drop two points on a map and the app fetches live habitat data from Natural England and Google Earth Engine, runs A* pathfinding weighted by BNG impact, and returns a scored route with a downloadable PDF report.
 
-<p align="center">
-  <img src="https://github.com/your-repo/bng-path-finder/raw/main/frontend/public/img1.png" alt="BNG Path Finder - Route Example Screenshot" width="49%" style="display:inline-block; vertical-align:top; margin-right:1%;">
-  <img src="https://github.com/your-repo/bng-path-finder/raw/main/frontend/public/img2.png" alt="BNG Path Finder - PDF Report Example" width="49%" style="display:inline-block; vertical-align:top;">
-</p>
-
-
+[Image 1](img1.png)
+[Image 2](img2.png)
 
 
 
