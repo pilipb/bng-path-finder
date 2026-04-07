@@ -1,7 +1,9 @@
-import type { BGPDocument, HabitatRow, Recommendation } from '../types/api'
+import type { BGPDocument, HabitatRow, Recommendation, EnrichedRecommendation, ResearchLink } from '../types/api'
 
 interface Props {
   report: BGPDocument
+  enrichedRecommendations: EnrichedRecommendation[] | null
+  researchLoading: boolean
 }
 
 function HabitatTable({ rows }: { rows: HabitatRow[] }) {
@@ -36,39 +38,117 @@ function HabitatTable({ rows }: { rows: HabitatRow[] }) {
 }
 
 const PRIORITY_CONFIG = {
-  high:   { label: 'Action required', className: 'rec-priority-high' },
-  medium: { label: 'Required before submission', className: 'rec-priority-medium' },
-  low:    { label: 'Recommended', className: 'rec-priority-low' },
+  high:   { label: 'Action required',           className: 'rv-priority-high' },
+  medium: { label: 'Required before submission', className: 'rv-priority-medium' },
+  low:    { label: 'Recommended',                className: 'rv-priority-low' },
 }
 
-function NextSteps({ recommendations }: { recommendations: Recommendation[] }) {
+function LinkList({ links }: { links: ResearchLink[] }) {
+  if (!links.length) return null
+  return (
+    <div className="rv-rec-links">
+      <span className="rv-rec-links-label">Relevant guidance &amp; forms</span>
+      <ul className="rv-rec-link-list">
+        {links.map((link, i) => (
+          <li key={i}>
+            <a href={link.url} target="_blank" rel="noopener noreferrer" className="rv-rec-link">
+              {link.title}
+            </a>
+            {link.description && (
+              <span className="rv-rec-link-desc"> — {link.description}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function RecCard({ rec, isResearchLoading }: { rec: Recommendation | EnrichedRecommendation, isResearchLoading: boolean }) {
+  const cfg = PRIORITY_CONFIG[rec.priority] ?? PRIORITY_CONFIG.low
+  const enriched = 'researched' in rec ? rec as EnrichedRecommendation : null
+  const isHighPriority = rec.priority === 'high'
+
+  return (
+    <div className={`rv-rec-card ${cfg.className}`}>
+      <div className="rv-rec-header">
+        <span className="rv-rec-badge">{cfg.label}</span>
+        <span className="rv-rec-title">{rec.title}</span>
+      </div>
+      <p className="rv-rec-detail">{rec.detail}</p>
+
+      {/* High-priority: show research results or loading shimmer */}
+      {isHighPriority && isResearchLoading && !enriched?.researched && (
+        <div className="rv-rec-research-loading">
+          <div className="rv-shimmer" />
+          <div className="rv-shimmer rv-shimmer-short" />
+          <span className="rv-rec-researching-label">Researching guidance…</span>
+        </div>
+      )}
+
+      {enriched?.researched && (
+        <div className="rv-rec-enriched">
+          <LinkList links={enriched.links} />
+          {enriched.guidance && (
+            <div className="rv-rec-guidance">
+              <span className="rv-rec-guidance-label">Advisory guidance</span>
+              <p>{enriched.guidance}</p>
+            </div>
+          )}
+          {enriched.timeline && (
+            <div className="rv-rec-timeline">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              </svg>
+              {enriched.timeline}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function NextSteps({
+  recommendations,
+  enrichedRecommendations,
+  researchLoading,
+}: {
+  recommendations: Recommendation[]
+  enrichedRecommendations: EnrichedRecommendation[] | null
+  researchLoading: boolean
+}) {
   if (!recommendations?.length) return null
+
+  // Use enriched recs if available, otherwise fall back to static
+  const displayRecs: (Recommendation | EnrichedRecommendation)[] =
+    enrichedRecommendations ?? recommendations
+
   return (
     <div className="rv-section rv-next-steps">
-      <div className="rv-section-label">Next Steps &amp; Recommendations</div>
+      <div className="rv-section-label">
+        Next Steps &amp; Recommendations
+        {researchLoading && (
+          <span className="rv-research-badge">
+            <span className="rv-research-dot" />
+            Researching…
+          </span>
+        )}
+      </div>
       <p className="rv-next-steps-intro">
         The following actions are required or recommended before this plan can be formally submitted.
-        Items marked <strong>Action required</strong> must be resolved.
+        Items marked <strong>Action required</strong> include researched guidance and official forms.
       </p>
       <div className="rv-rec-list">
-        {recommendations.map((rec, i) => {
-          const cfg = PRIORITY_CONFIG[rec.priority] ?? PRIORITY_CONFIG.low
-          return (
-            <div key={i} className={`rv-rec-card ${cfg.className}`}>
-              <div className="rv-rec-header">
-                <span className="rv-rec-badge">{cfg.label}</span>
-                <span className="rv-rec-title">{rec.title}</span>
-              </div>
-              <p className="rv-rec-detail">{rec.detail}</p>
-            </div>
-          )
-        })}
+        {displayRecs.map((rec, i) => (
+          <RecCard key={i} rec={rec} isResearchLoading={researchLoading} />
+        ))}
       </div>
     </div>
   )
 }
 
-export function ReportView({ report }: Props) {
+export function ReportView({ report, enrichedRecommendations, researchLoading }: Props) {
   const { sections } = report
   const metric = sections.biodiversity_gain_metric
   const hasDeficit = metric.gain_deficit > 0
@@ -176,8 +256,12 @@ export function ReportView({ report }: Props) {
         </div>
       )}
 
-      {/* Next steps */}
-      <NextSteps recommendations={report.recommendations} />
+      {/* Next steps — enriched with research */}
+      <NextSteps
+        recommendations={report.recommendations}
+        enrichedRecommendations={enrichedRecommendations}
+        researchLoading={researchLoading}
+      />
     </div>
   )
 }

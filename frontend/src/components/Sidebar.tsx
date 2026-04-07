@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { RouteResponse, BGPDocument } from '../types/api'
+import type { RouteResponse, BGPDocument, EnrichedRecommendation } from '../types/api'
 import { CostBreakdown } from './CostBreakdown'
 import { ReportView } from './ReportView'
 import { triggerPrint } from '../utils/print'
@@ -13,6 +13,8 @@ interface Props {
   pointB: [number, number] | null
   routeResult: RouteResponse | null
   reportData: BGPDocument | null
+  enrichedRecommendations: EnrichedRecommendation[] | null
+  researchLoading: boolean
   error: string | null
   onCalculate: () => void
   onGenerateReport: () => void
@@ -22,8 +24,8 @@ interface Props {
 }
 
 export function Sidebar({
-  step, pointA, pointB, routeResult, reportData, error,
-  onCalculate, onGenerateReport, onReset, reportLoading, onOpenFormModal,
+  step, pointA, pointB, routeResult, reportData, enrichedRecommendations,
+  researchLoading, error, onCalculate, onGenerateReport, onReset, reportLoading, onOpenFormModal,
 }: Props) {
   const [view, setView] = useState<View>('route')
 
@@ -103,7 +105,11 @@ export function Sidebar({
                     Fill out Biodiversity Gain Plan (PDF)
                   </button>
                 </div>
-                <ReportView report={reportData} />
+                <ReportView
+                  report={reportData}
+                  enrichedRecommendations={enrichedRecommendations}
+                  researchLoading={researchLoading}
+                />
                 <div className="action-buttons">
                   <button className="btn btn-ghost" onClick={onReset}>Reset</button>
                 </div>

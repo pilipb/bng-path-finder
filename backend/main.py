@@ -80,6 +80,12 @@ try:
 except ImportError:
     print("[main] form router not yet available")
 
+try:
+    from routers.recommendations import router as recommendations_router  # noqa: E402
+    app.include_router(recommendations_router)
+except ImportError:
+    logger.warning("Recommendations router not yet available — skipping")
+
 
 @app.get("/")
 def root():

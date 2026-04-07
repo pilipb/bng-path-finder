@@ -62,6 +62,19 @@ export interface Recommendation {
   detail: string
 }
 
+export interface ResearchLink {
+  title: string
+  url: string
+  description: string
+}
+
+export interface EnrichedRecommendation extends Recommendation {
+  links: ResearchLink[]
+  guidance: string
+  timeline: string | null
+  researched: boolean
+}
+
 export interface BGPDocument {
   title: string
   reference: string

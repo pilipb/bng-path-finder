@@ -10,6 +10,7 @@ import { InfoModal } from './components/InfoModal'
 import { useRoute } from './hooks/useRoute'
 import { useReport } from './hooks/useReport'
 import { useFormPdf } from './hooks/useFormPdf'
+import { useResearch } from './hooks/useResearch'
 import type { DeveloperDetails } from './types/api'
 import './App.css'
 
@@ -23,6 +24,7 @@ export default function App() {
   const route = useRoute()
   const report = useReport()
   const formPdf = useFormPdf()
+  const research = useResearch(report.data, route.data)
 
   const [showFormModal, setShowFormModal] = useState(false)
   const [showInfo, setShowInfo] = useState(false)
@@ -71,8 +73,9 @@ export default function App() {
     setPointB(null)
     route.reset()
     report.reset()
+    research.reset()
     setStep('place-a')
-  }, [route, report])
+  }, [route, report, research])
 
   return (
     <>
@@ -91,6 +94,8 @@ export default function App() {
           pointB={pointB}
           routeResult={route.data}
           reportData={report.data}
+          enrichedRecommendations={research.enriched}
+          researchLoading={research.loading}
           error={route.error}
           onCalculate={handleCalculate}
           onGenerateReport={handleGenerateReport}
