@@ -1,4 +1,4 @@
-import type { BGPDocument, HabitatRow } from '../types/api'
+import type { BGPDocument, HabitatRow, Recommendation } from '../types/api'
 
 interface Props {
   report: BGPDocument
@@ -31,6 +31,39 @@ function HabitatTable({ rows }: { rows: HabitatRow[] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+const PRIORITY_CONFIG = {
+  high:   { label: 'Action required', className: 'rec-priority-high' },
+  medium: { label: 'Required before submission', className: 'rec-priority-medium' },
+  low:    { label: 'Recommended', className: 'rec-priority-low' },
+}
+
+function NextSteps({ recommendations }: { recommendations: Recommendation[] }) {
+  if (!recommendations?.length) return null
+  return (
+    <div className="rv-section rv-next-steps">
+      <div className="rv-section-label">Next Steps &amp; Recommendations</div>
+      <p className="rv-next-steps-intro">
+        The following actions are required or recommended before this plan can be formally submitted.
+        Items marked <strong>Action required</strong> must be resolved.
+      </p>
+      <div className="rv-rec-list">
+        {recommendations.map((rec, i) => {
+          const cfg = PRIORITY_CONFIG[rec.priority] ?? PRIORITY_CONFIG.low
+          return (
+            <div key={i} className={`rv-rec-card ${cfg.className}`}>
+              <div className="rv-rec-header">
+                <span className="rv-rec-badge">{cfg.label}</span>
+                <span className="rv-rec-title">{rec.title}</span>
+              </div>
+              <p className="rv-rec-detail">{rec.detail}</p>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -142,6 +175,9 @@ export function ReportView({ report }: Props) {
           <p className="rv-notes">{sections.notes}</p>
         </div>
       )}
+
+      {/* Next steps */}
+      <NextSteps recommendations={report.recommendations} />
     </div>
   )
 }

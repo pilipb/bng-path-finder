@@ -42,14 +42,18 @@ def build_cost_raster(
     # Convert habitat distinctiveness to cost
     habitat_cost = np.vectorize(lambda d: DISTINCTIVENESS_COST.get(int(d), 2.0))(habitat_raster)
 
-    # Composite cost
+    # Composite cost (water_raster may contain np.inf for impassable water cells)
     cost = (habitat_cost + sssi_raster + water_raster) * lnrs_multiplier
-    cost = np.maximum(cost, MIN_COST).astype(np.float32)
 
-    # Ancient woodland: very high cost (effectively impassable but A* can still route around)
-    cost[awi_raster > 0] = awi_raster[awi_raster > 0]
+    # Apply minimum cost only to finite cells; leave np.inf cells alone
+    finite = np.isfinite(cost)
+    cost[finite] = np.maximum(cost[finite], MIN_COST)
+    cost = cost.astype(np.float32)
 
-    awi_mask  = awi_raster > 0
+    # Ancient woodland: impassable (np.inf). Applied last so it overrides everything.
+    awi_mask = awi_raster != 0  # raster is 0 everywhere except AWI cells (np.inf)
+    cost[awi_mask] = np.inf
+
     sssi_mask = sssi_raster > 0
     lnrs_mask = lnrs_multiplier > 1.0
 

@@ -56,11 +56,18 @@ export interface BGPSections {
   notes: string
 }
 
+export interface Recommendation {
+  priority: 'high' | 'medium' | 'low'
+  title: string
+  detail: string
+}
+
 export interface BGPDocument {
   title: string
   reference: string
   summary: string
   sections: BGPSections
+  recommendations: Recommendation[]
 }
 
 export interface ReportRequest {

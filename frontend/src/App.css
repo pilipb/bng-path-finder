@@ -662,6 +662,85 @@ html, body, #root {
   line-height: 1.6;
 }
 
+/* Next Steps / Recommendations */
+.rv-next-steps-intro {
+  padding: 0 14px 10px;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.rv-rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 14px 10px;
+}
+
+.rv-rec-card {
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+  padding: 10px 12px;
+}
+
+.rv-rec-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.rv-rec-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.rv-rec-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.rv-rec-detail {
+  font-size: 12px;
+  color: #374151;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.rv-priority-high {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+.rv-priority-high .rv-rec-badge {
+  background: #ef4444;
+  color: #fff;
+}
+
+.rv-priority-medium {
+  background: #fffbeb;
+  border-color: #f59e0b;
+}
+.rv-priority-medium .rv-rec-badge {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.rv-priority-low {
+  background: #f0fdf4;
+  border-color: #22c55e;
+}
+.rv-priority-low .rv-rec-badge {
+  background: #22c55e;
+  color: #fff;
+}
+
 /* Info modal */
 .info-modal-box {
   max-width: 600px;

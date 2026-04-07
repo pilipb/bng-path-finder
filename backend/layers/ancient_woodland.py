@@ -8,11 +8,11 @@ from pathfinding.grid import GridSpec
 
 logger = logging.getLogger(__name__)
 
-ANCIENT_WOODLAND_COST = 999.0  # impassable
+ANCIENT_WOODLAND_COST = np.inf  # truly impassable — A* will never route through
 
 
 def get_awi_raster(grid: GridSpec, bbox_wgs84: tuple[float, float, float, float]) -> np.ndarray:
-    """Returns a cost raster where ancient woodland = 999 (impassable), 0 elsewhere."""
+    """Returns a cost raster where ancient woodland = np.inf (impassable), 0 elsewhere."""
     geojson = fetch_layer("ancient_woodland", bbox_wgs84)
     features = geojson.get("features", [])
     logger.info("ancient_woodland: %d features fetched", len(features))

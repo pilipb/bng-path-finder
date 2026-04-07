@@ -47,11 +47,18 @@ class BGPSections(TypedDict):
     notes: str
 
 
+class Recommendation(TypedDict):
+    priority: str   # "high" | "medium" | "low"
+    title: str
+    detail: str
+
+
 class BGPDocument(TypedDict):
     title: str
     reference: str
     summary: str
     sections: BGPSections
+    recommendations: list[Recommendation]
 
 
 def build_gain_plan(route_result: dict) -> BGPDocument:
@@ -218,6 +225,13 @@ def build_gain_plan(route_result: dict) -> BGPDocument:
             lnrs_areas_crossed=lnrs_areas,
             notes=" ".join(notes_parts),
         ),
+        recommendations=_build_recommendations(
+            metric=metric,
+            sssi_required=sssi_required,
+            lnrs_areas=lnrs_areas,
+            awi_count=len(awi_segments),
+            gain_deficit=gain_deficit,
+        ),
     )
     doc["summary"] = build_summary(doc, route_result)
     return doc
@@ -254,3 +268,129 @@ def _get_lnrs_area_names(segments: list[dict]) -> list[str]:
     if not lnrs_segs:
         return []
     return [f"LNRS area (segment {s['index'] + 1})" for s in lnrs_segs[:3]]
+
+
+def _build_recommendations(
+    metric: BiodiversityGainMetric,
+    sssi_required: bool,
+    lnrs_areas: list[str],
+    awi_count: int,
+    gain_deficit: float,
+) -> list[Recommendation]:
+    """
+    Derive actionable next-step recommendations from the BNG assessment.
+    These correspond to questions left unanswered or assumed on the official form.
+    """
+    recs: list[Recommendation] = []
+
+    # ── Critical / blocking issues ────────────────────────────────────────────
+    if awi_count:
+        recs.append(Recommendation(
+            priority="high",
+            title="Ancient Woodland — consider an alternative route",
+            detail=(
+                f"{awi_count} segment(s) of this route pass through or adjacent to Ancient "
+                "Woodland. The Statutory Biodiversity Metric does not fully account for "
+                "irreplaceable habitats. An alternative route should be explored. If this route "
+                "must proceed, a specialist ecological survey and consultation with Natural "
+                "England is mandatory before any application is submitted."
+            ),
+        ))
+
+    if sssi_required:
+        recs.append(Recommendation(
+            priority="high",
+            title="SSSI consultation — mandatory before submission",
+            detail=(
+                "This route crosses an SSSI Impact Risk Zone. A formal consultation with "
+                "Natural England under the Wildlife and Countryside Act 1981 (s.28) must be "
+                "completed and documented in the planning application. Allow 28 days for a "
+                "response. Development cannot proceed without their consent."
+            ),
+        ))
+
+    if gain_deficit > 0:
+        recs.append(Recommendation(
+            priority="high",
+            title=f"Off-site compensation required — {gain_deficit:.2f} units deficit",
+            detail=(
+                f"On-site habitat alone delivers a shortfall of {gain_deficit:.2f} biodiversity "
+                "units against the mandatory 10% net gain requirement. You must either: "
+                "(a) register a BNG off-site gain site with the LPA, "
+                "(b) purchase statutory biodiversity credits from Natural England, or "
+                "(c) revise the route to reduce habitat impact. "
+                "A completed 'Biodiversity Gain Information' form (Form BGI) must accompany "
+                "the planning application."
+            ),
+        ))
+
+    # ── Form fields answered by assumption — must be verified ─────────────────
+    recs.append(Recommendation(
+        priority="medium",
+        title="Commission a field habitat survey",
+        detail=(
+            "The baseline assessment in this report uses satellite-derived data and the Natural "
+            "England Priority Habitats Inventory. A Phase 1 (or Phase 2 if warranted) field "
+            "habitat survey by a qualified ecologist is required before formal submission to "
+            "confirm habitat types, areas, and condition scores used in the Metric."
+        ),
+    ))
+
+    recs.append(Recommendation(
+        priority="medium",
+        title="Prepare a Habitat Management and Monitoring Plan (HMMP)",
+        detail=(
+            "Section 4.12 of the Biodiversity Gain Plan form requires confirmation that a "
+            "Habitat Management and Monitoring Plan (HMMP) exists. This document must set out "
+            "how on-site and any off-site habitats will be managed and monitored for at least "
+            "30 years. It should be agreed with the LPA prior to determination."
+        ),
+    ))
+
+    recs.append(Recommendation(
+        priority="medium",
+        title="Run the statutory Biodiversity Metric tool",
+        detail=(
+            "This report provides an indicative BNG assessment. For formal submission the "
+            "applicant must use Natural England's official Statutory Biodiversity Metric "
+            "calculation tool (currently v4.0) and submit the completed spreadsheet alongside "
+            "the planning application. The tool is available from the Natural England website."
+        ),
+    ))
+
+    # ── Low-priority / administrative ─────────────────────────────────────────
+    recs.append(Recommendation(
+        priority="low",
+        title="Complete applicant and developer details on the official form",
+        detail=(
+            "The official Biodiversity Gain Plan PDF requires the applicant name, company, "
+            "site address, planning application reference, LPA, email, and telephone. Use the "
+            "'Fill out Biodiversity Gain Plan (PDF)' button to enter these details before "
+            "downloading the form for submission."
+        ),
+    ))
+
+    if lnrs_areas:
+        recs.append(Recommendation(
+            priority="low",
+            title="Notify the Local Nature Recovery Strategy coordinator",
+            detail=(
+                f"This route crosses {len(lnrs_areas)} Local Nature Recovery Strategy (LNRS) "
+                "priority area(s). While not a statutory block, early engagement with the "
+                "responsible authority can inform habitat enhancement requirements and may "
+                "positively influence the LPA's assessment."
+            ),
+        ))
+
+    recs.append(Recommendation(
+        priority="low",
+        title="Share biodiversity data with local records centres",
+        detail=(
+            "Section 8 of the Biodiversity Gain Plan form asks whether you consent to sharing "
+            "habitat and biodiversity data with Local Environmental Record Centres and other "
+            "bodies. Sharing data is strongly encouraged by DEFRA and supports future "
+            "conservation planning. Consider giving consent when submitting."
+        ),
+    ))
+
+    return recs
