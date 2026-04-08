@@ -89,6 +89,18 @@ html, body, #root {
   color: var(--color-brand);
 }
 
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bmc-button {
+  display: flex;
+  align-items: center;
+  line-height: 0;
+}
+
 .app-header-info-btn {
   display: flex;
   align-items: center;
@@ -987,7 +999,7 @@ html, body, #root {
 
 /* ── Info modal ─────────────────────────────────────────────────────────── */
 .info-modal-box {
-  max-width: 600px;
+  max-width: 90%;
 }
 
 .info-modal-body {
@@ -1057,7 +1069,7 @@ html, body, #root {
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border);
   width: 100%;
-  max-width: 540px;
+  max-width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: rgba(0,0,0,0.12) 0px 8px 32px;
