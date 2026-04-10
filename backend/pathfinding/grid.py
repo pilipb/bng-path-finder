@@ -19,7 +19,7 @@ _to_osgb = Transformer.from_crs("EPSG:4326", "EPSG:27700", always_xy=True)
 _to_wgs84 = Transformer.from_crs("EPSG:27700", "EPSG:4326", always_xy=True)
 
 MAX_CELLS = 2000
-BUFFER_M = 500
+BUFFER_M = 2000
 
 
 def make_grid(point_a: tuple[float, float], point_b: tuple[float, float]) -> GridSpec:
